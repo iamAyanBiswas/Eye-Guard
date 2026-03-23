@@ -15,6 +15,9 @@ Endpoints:
 """
 
 import sys
+import os
+import jwt
+from functools import wraps
 import numpy as np
 import joblib
 from pathlib import Path
@@ -28,6 +31,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ML_MODEL_DIR = BASE_DIR / "ml-model"
 MODEL_PATH = ML_MODEL_DIR / "fatigue_classifier.tflite"
 SCALER_PATH = ML_MODEL_DIR / "feature_scaler.pkl"
+
+# ── Auth Setup ──
+# SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
+
+# def token_required(f):
+#     @wraps(f)
+#     def decorator(*args, **kwargs):
+#         if not SUPABASE_JWT_SECRET:
+#             # If missing from env, fail closed for security.
+#             return jsonify({'error': 'Server configuration error: SUPABASE_JWT_SECRET not set'}), 500
+            
+#         auth_header = request.headers.get('Authorization')
+#         if not auth_header or not auth_header.startswith("Bearer "):
+#             return jsonify({'error': 'Authorization token is missing or invalid format!'}), 401
+            
+#         try:
+#             token = auth_header.split(" ")[1]
+#             print(token)
+#             data = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+#             # If valid, proceed (can extract user via data['sub'] if needed)
+#         except Exception as e:
+#             print(e)
+#             return jsonify({'error': f'Invalid token! {str(e)}'}), 401
+            
+#         return f(*args, **kwargs)
+#     return decorator
 
 # ── Fatigue Labels ──
 FATIGUE_LABELS = {
@@ -149,6 +178,7 @@ def model_info():
 
 
 @app.route('/api/predict', methods=['POST'])
+# @token_required
 def predict():
     """
     Predict fatigue level from input features.
@@ -176,6 +206,7 @@ def predict():
         }), 503
 
     try:
+        print(request)
         data = request.get_json()
 
         if data is None:
