@@ -44,7 +44,7 @@ const INITIAL_STATE: EyeTrackerState = {
 };
 
 /** How often (ms) to send features to the API for fatigue prediction. */
-const PREDICTION_INTERVAL_MS = 30_000;
+const PREDICTION_INTERVAL_MS = 5_000;
 
 export function useEyeTracker(): UseEyeTrackerReturn {
   const [state, setState] = useState<EyeTrackerState>(INITIAL_STATE);

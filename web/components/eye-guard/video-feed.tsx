@@ -13,9 +13,7 @@ const VideoFeed = forwardRef<
   VideoFeedProps
 >(function VideoFeed({ faceDetected, isRunning }, _ref) {
   return (
-    <Card className="overflow-hidden border-0 bg-black/90">
-      <CardContent className="relative p-0">
-        <div className="relative aspect-[4/3] w-full">
+    <div className="relative w-full h-auto aspect-4/3 overflow-hidden rounded-2xl bg-transparent">
           {/* Webcam video (hidden, used as source) */}
           <video
             id="eyeguard-video"
@@ -27,7 +25,7 @@ const VideoFeed = forwardRef<
           {/* Canvas with landmarks overlay */}
           <canvas
             id="eyeguard-canvas"
-            className="h-full w-full object-contain"
+            className="h-full w-full object-cover"
             style={{ transform: "scaleX(-1)" }}
           />
 
@@ -56,25 +54,15 @@ const VideoFeed = forwardRef<
           )}
 
           {/* Face detection indicator */}
-          {isRunning && (
+          {isRunning && faceDetected && (
             <div className="absolute left-3 top-3">
-              <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium backdrop-blur-sm ${
-                  faceDetected
-                    ? "bg-green-500/20 text-green-400"
-                    : "bg-red-500/20 text-red-400"
-                }`}
-              >
-                <span
-                  className={`size-1.5 rounded-full ${faceDetected ? "bg-green-400 animate-pulse" : "bg-red-400"}`}
-                />
-                {faceDetected ? "Face Detected" : "No Face"}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400 backdrop-blur-sm">
+                <span className="size-1.5 rounded-full bg-green-400 animate-pulse" />
+                Face Detected
               </span>
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+    </div>
   );
 });
 

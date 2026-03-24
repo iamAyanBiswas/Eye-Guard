@@ -33,20 +33,9 @@ export default function EyeGuardDashboard() {
   }, [start]);
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-7xl flex-col gap-6 p-4 md:p-6 lg:p-8">
+    <div className="mx-auto flex min-h-svh max-w-400 flex-col gap-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
       <header className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
-          <Eye className="size-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="font-heading text-xl font-bold tracking-tight">
-            EyeGuard
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Eye Strain Detection System
-          </p>
-        </div>
       </header>
 
       {/* Alert */}
@@ -57,21 +46,33 @@ export default function EyeGuardDashboard() {
       />
 
       {/* Main content */}
-      <div className="grid flex-1 gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="grid flex-1 gap-6 lg:grid-cols-[1fr_320px]">
         {/* Left: Video feed */}
-        <div className="flex flex-col gap-4">
-          <VideoFeed faceDetected={state.faceDetected} isRunning={isRunning} />
+        <div className="flex flex-col gap-4 min-w-0">
+          <div className="flex-1 flex flex-col overflow-hidden rounded-2xl border bg-card w-full">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b p-4 px-6 sm:flex-nowrap">
+              <div className="flex items-center gap-2 font-semibold">
+                <span className="text-xl">🎥</span>
+                <span className="text-lg tracking-tight">Live Eye Tracking</span>
+              </div>
+              <SessionControls
+                isRunning={isRunning}
+                isReady={isReady}
+                error={error}
+                onStart={handleStart}
+                onStop={stop}
+              />
+            </div>
+            <div className="flex-1 bg-muted/5 flex items-center justify-center">
+              <div className="w-full max-w-3xl">
+                <VideoFeed faceDetected={state.faceDetected} isRunning={isRunning} />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Right: Controls + Metrics */}
+        {/* Right: Metrics */}
         <div className="flex flex-col gap-4">
-          <SessionControls
-            isRunning={isRunning}
-            isReady={isReady}
-            error={error}
-            onStart={handleStart}
-            onStop={stop}
-          />
           <MetricsPanel
             state={state}
             fatigue={fatigue}
@@ -82,7 +83,7 @@ export default function EyeGuardDashboard() {
 
       {/* Footer */}
       <footer className="text-center text-[10px] text-muted-foreground">
-        EyeGuard v1.0 • Eye Strain Detection using Computer Vision &amp; Machine Learning
+        EyeGuard v2.0 • Eye Strain Detection using Computer Vision &amp; Machine Learning
       </footer>
     </div>
   );

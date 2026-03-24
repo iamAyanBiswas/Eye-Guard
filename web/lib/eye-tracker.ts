@@ -296,11 +296,6 @@ export class EyeTracker {
 
       // Draw eye landmarks
       this.drawEyeLandmarks(landmarks, results);
-    } else {
-      // Draw "no face" indicator
-      this.ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
-      this.ctx.font = "20px sans-serif";
-      this.ctx.fillText("No face detected", 20, 40);
     }
 
     // Update buffers

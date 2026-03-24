@@ -1,18 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { EyeTrackerState } from "@/lib/eye-tracker";
 import type { FatigueInfo } from "@/hooks/use-eye-tracker";
-import {
-  Eye,
-  Timer,
-  Activity,
-  Brain,
-  Gauge,
-  MonitorDot,
-} from "lucide-react";
+import { Goal } from "lucide-react";
 
 interface MetricsPanelProps {
   state: EyeTrackerState;
@@ -26,162 +18,127 @@ function formatDuration(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function getBlinkRateStatus(rate: number): {
-  label: string;
-  color: string;
-  variant: "default" | "secondary" | "destructive" | "outline";
-} {
-  if (rate < 8) return { label: "Very Low", color: "text-red-400", variant: "destructive" };
-  if (rate < 12) return { label: "Low", color: "text-orange-400", variant: "outline" };
-  if (rate <= 25) return { label: "Healthy", color: "text-green-400", variant: "default" };
-  return { label: "High", color: "text-orange-400", variant: "outline" };
-}
-
-function getFatigueColor(level: number): string {
-  switch (level) {
-    case 0:
-      return "text-green-400";
-    case 1:
-      return "text-blue-400";
-    case 2:
-      return "text-orange-400";
-    case 3:
-      return "text-red-400";
-    default:
-      return "text-muted-foreground";
-  }
-}
-
 export default function MetricsPanel({
   state,
-  fatigue,
+  fatigue, // Unused in screenshots, but we can integrate or keep it backend
   isRunning,
 }: MetricsPanelProps) {
-  const blinkStatus = getBlinkRateStatus(state.blinkRate);
+
+  // For Eye Health Score, we can derive a mock score or use blink metrics and fatigue
+  const getHealthScore = () => {
+    if (!isRunning) return 100;
+    // Calculate a basic health score based on blink rate vs healthy range and fatigue
+    let score = 100;
+    const br = state.blinkRate;
+    if (br > 0 && br < 8) score -= 20;
+    else if (br >= 8 && br < 12) score -= 10;
+    else if (br > 25) score -= 15;
+
+    if (fatigue) {
+      score -= fatigue.level * 10;
+    }
+    return Math.max(0, Math.min(100, Math.round(score)));
+  };
+
+  const healthScore = getHealthScore();
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Activity className="size-4 text-primary" />
-          Real-time Metrics
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {/* Session Duration */}
-        <MetricRow
-          icon={<Timer className="size-4" />}
-          label="Session Duration"
-          value={isRunning ? formatDuration(state.sessionDurationSec) : "--:--"}
-        />
-
-        {/* Total Blinks */}
-        <MetricRow
-          icon={<Eye className="size-4" />}
-          label="Total Blinks"
-          value={isRunning ? String(state.blinkCount) : "--"}
-        />
-
-        {/* Blink Rate */}
-        <MetricRow
-          icon={<Gauge className="size-4" />}
-          label="Blink Rate"
-          value={
-            isRunning ? (
-              <span className="flex items-center gap-2">
-                <span className={blinkStatus.color}>
-                  {state.blinkRate.toFixed(1)}/min
-                </span>
-                <Badge variant={blinkStatus.variant} className="text-[10px]">
-                  {blinkStatus.label}
-                </Badge>
-              </span>
-            ) : (
-              "--"
-            )
-          }
-        />
-
-        {/* EAR */}
-        <MetricRow
-          icon={<MonitorDot className="size-4" />}
-          label="Eye Aspect Ratio"
-          value={isRunning ? state.ear.toFixed(3) : "--"}
-        />
-
-        {/* Gaze Stability */}
-        <div className="space-y-1.5">
-          <MetricRow
-            icon={<Activity className="size-4" />}
-            label="Gaze Stability"
-            value={isRunning ? `${(state.gazeStability * 100).toFixed(0)}%` : "--"}
-          />
-          {isRunning && (
-            <Progress
-              value={state.gazeStability * 100}
-              className="h-1.5"
-            />
-          )}
+    <div className="flex flex-col gap-4">
+      {/* Session Duration */}
+      <Card className="flex flex-col gap-1 rounded-xl p-5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Session Duration
+        </span>
+        <div className="text-4xl font-bold tracking-tight text-blue-500">
+          {isRunning ? formatDuration(state.sessionDurationSec) : "00:00"}
         </div>
+      </Card>
 
-        {/* Fatigue Level (ML) */}
-        <div className="border-t pt-3">
-          <MetricRow
-            icon={<Brain className="size-4" />}
-            label="Fatigue Level (ML)"
-            value={
-              fatigue ? (
-                <span className="flex items-center gap-2">
-                  <span className={getFatigueColor(fatigue.level)}>
-                    {fatigue.label}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {(fatigue.confidence * 100).toFixed(0)}%
-                  </span>
-                </span>
-              ) : isRunning ? (
-                <span className="text-xs text-muted-foreground">
-                  Waiting for data…
-                </span>
-              ) : (
-                "--"
-              )
-            }
+      {/* Total Blinks */}
+      <Card className="flex flex-col gap-1 rounded-xl p-5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Total Blinks
+        </span>
+        <div className="text-4xl font-bold tracking-tight text-blue-500">
+          {isRunning ? state.blinkCount : "0"}
+        </div>
+      </Card>
+
+      {/* Blink Rate */}
+      <Card className="flex flex-col gap-1 rounded-xl p-5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Blink Rate
+        </span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold tracking-tight text-blue-500">
+            {isRunning ? state.blinkRate.toFixed(1) : "0.0"}
+          </span>
+          <span className="text-sm font-medium text-muted-foreground">/min</span>
+        </div>
+        <div className="mt-2 h-1.5 w-full rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-blue-500/20"
+            style={{ width: isRunning ? `${Math.min(100, (state.blinkRate / 30) * 100)}%` : '0%' }}
           />
+        </div>
+      </Card>
+
+      {/* Eye Aspect Ratio */}
+      <Card className="flex flex-col gap-1 rounded-xl p-5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Eye Aspect Ratio
+        </span>
+        <div className="text-4xl font-bold tracking-tight text-blue-500">
+          {isRunning ? state.ear.toFixed(3) : "0.000"}
+        </div>
+      </Card>
+
+      {/* Fatigue Prediction (API) */}
+      <Card className="flex flex-col gap-1 rounded-xl p-5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Fatigue Level (ML API)
+        </span>
+        <div className="flex items-baseline gap-2">
+          <div className="text-4xl font-bold tracking-tight text-blue-500">
+            {fatigue ? fatigue.label : isRunning ? "Waiting..." : "Idle"}
+          </div>
           {fatigue && (
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              Updated {Math.round((Date.now() - fatigue.lastUpdated) / 1000)}s ago
-            </p>
+            <span className="text-xs font-medium text-muted-foreground">
+              {(fatigue.confidence * 100).toFixed(0)}% confidence
+            </span>
           )}
         </div>
-
-        {/* FPS */}
-        {isRunning && (
-          <p className="text-[10px] text-muted-foreground">
-            Processing: {state.fps} FPS
+        {fatigue && (
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Last updated {Math.round((Date.now() - fatigue.lastUpdated) / 1000)}s ago
           </p>
         )}
-      </CardContent>
-    </Card>
-  );
-}
+      </Card>
 
-function MetricRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
-        {icon}
-        {label}
-      </span>
-      <span className="text-sm font-semibold">{value}</span>
+      {/* Eye Health Score */}
+      <Card className="flex flex-col gap-2 rounded-xl border-green-200 bg-green-50/50 p-5 dark:bg-green-950/20 dark:border-green-900">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Goal className="size-4 text-red-500" />
+          <span>Eye Health Score</span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold tracking-tight text-green-500">
+            {healthScore}
+          </span>
+          <span className="text-sm font-medium text-muted-foreground">/100</span>
+        </div>
+        <Progress
+          value={healthScore}
+          className="mt-2 h-2.5 bg-green-200 dark:bg-green-900 [&>div]:bg-green-500"
+        />
+      </Card>
+      {/* Applying custom health score progress bar styling directly for the above card just to be safe */}
+      <style jsx global>{`
+        .bg-green-50\\/50 .bg-primary {
+           background-color: #22c55e !important; 
+        }
+      `}</style>
     </div>
   );
 }
+
